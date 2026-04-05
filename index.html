@@ -51,8 +51,6 @@ button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;backgrou
 <script>
 const CLOUD_NAME = "dmtrmcxpl";
 let currentCode = "";
-let countdownAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/clients/mAyMsD25/ses.mp3");
-let surpriseAudio;
 
 // ELEMENTLER
 const playBtn = document.getElementById("playBtn");
@@ -65,13 +63,17 @@ const codeScreen = document.getElementById("codeScreen");
 const result = document.getElementById("result");
 const musicBtn = document.getElementById("musicBtn");
 
-// Play butonuna basınca countdown video + ses başlat
+let countdownAudio = null;
+let surpriseAudio = null;
+
+// Play butonuna basınca countdown video ve ses başlat
 playBtn.addEventListener("click", ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
   rightCurtain.classList.add("openRight");
 
-  countdownAudio.currentTime = 0;
+  // Countdown sesini oluştur ve kullanıcı tıklamasıyla çal
+  countdownAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/clients/mAyMsD25/ses.mp3");
   countdownAudio.play().catch(()=>{});
 
   setTimeout(()=>{
@@ -107,17 +109,14 @@ musicBtn.addEventListener("click", ()=>{
   if(!currentCode) return;
 
   // Countdown sesini durdur
-  countdownAudio.pause();
-  countdownAudio.currentTime = 0;
-
-  // Sürpriz sesini önceden oluştur ve çal
-  if(!surpriseAudio){
-    surpriseAudio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`);
-  } else {
-    surpriseAudio.pause();
-    surpriseAudio.currentTime = 0;
-    surpriseAudio.src = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
+  if(countdownAudio){
+    countdownAudio.pause();
+    countdownAudio.currentTime = 0;
   }
+
+  // Sürpriz sesini kullanıcı tıklamasıyla çal
+  surpriseAudio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`);
+  surpriseAudio.currentTime = 0;
   surpriseAudio.play().catch(err=>console.log("Ses çalınamadı:", err));
 });
 </script>
