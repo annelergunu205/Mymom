@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>For My Love - Dinamik</title>
+<title>For My Love</title>
 <style>
 body{margin:0;background:black;overflow:hidden;font-family:Arial;color:white;}
 #stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
@@ -54,9 +54,9 @@ button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;backgrou
 <div id="heartLayer"></div>
 
 <script>
-const CLOUD_NAME="dmtrmcxpl";
+const CLOUD_NAME = "dmtrmcxpl";
 let currentCode="";
-let heartInterval;
+let heartInterval = null;
 
 // ELEMENTLER
 const playBtn=document.getElementById("playBtn");
@@ -71,7 +71,7 @@ const musicBtn=document.getElementById("musicBtn");
 const resultImage=document.getElementById("resultImage");
 const heartLayer=document.getElementById("heartLayer");
 
-// PERDE AÇILIŞ (SESSİZ)
+// PERDE AÇILIŞ
 playBtn.addEventListener("click", ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
@@ -101,36 +101,40 @@ function startHearts(){
   },300);
 }
 
-// KOD GİRME & DİNLEME
+// KOD KONTROL + DİNAMİK JPG/PNG ALGILAMA
 document.getElementById("openBtn").addEventListener("click", ()=>{
-  let code=document.getElementById("codeInput").value.trim();
+  let code = document.getElementById("codeInput").value.trim();
   if(!code) return;
 
-  currentCode = code;
+  const audioURL = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${code}/ses.mp3`;
+  const extensions = ["png","jpg","jpeg"];
 
-  // Dinamik görsel ve ses URL
-  const photoURL  = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${currentCode}/${currentCode}.png`;
-  const audioURL  = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
+  function tryImage(i){
+    if(i >= extensions.length){
+      document.getElementById("error").style.display="block";
+      return;
+    }
 
-  // Görseli test edip yükle
-  let img=new Image();
-  img.onload=()=>{
-    resultImage.src = photoURL;
-    codeScreen.style.display="none";
-    result.style.display="flex";
-    startHearts();
-  };
-  img.onerror=()=>{
-    document.getElementById("error").style.display="block";
-  };
-  img.src=photoURL;
+    const imgURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.${extensions[i]}`;
+    let imgTest = new Image();
+    imgTest.onload = ()=>{
+      resultImage.src = imgURL;
+      currentCode = code;
+      codeScreen.style.display = "none";
+      result.style.display = "flex";
+    };
+    imgTest.onerror = ()=>{ tryImage(i+1); };
+    imgTest.src = imgURL;
+  }
 
-  // Sürprizi Dinle butonuna audio URL kaydedilecek
+  tryImage(0);
+
   musicBtn.onclick = ()=>{
+    if(!currentCode) return;
     const surpriseAudio = new Audio(audioURL);
     surpriseAudio.play().catch(err=>{
       console.log("Ses hatası:", err);
-      alert("Ses yüklenemedi veya tarayıcı izin vermedi.");
+      alert("Ses bulunamadı veya yüklenemedi.");
     });
   };
 });
