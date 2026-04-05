@@ -3,69 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test</title>
+<title>For My Love</title>
 
 <style>
-body{
-  margin:0;
-  background:black;
-  color:white;
-  font-family:Arial;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-  flex-direction:column;
+body{margin:0;background:black;font-family:Arial;overflow:hidden;color:white;}
+
+#stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+#playBtn{position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#playBtn:after{content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;}
+
+.curtain{position:absolute;top:0;width:50%;height:100%;background-image:url("curtain.jpg");background-size:200% 100%;transition:2s;}
+#leftCurtain{left:0;background-position:left;}
+#rightCurtain{right:0;background-position:right;}
+.openLeft{transform:translateX(-100%);}
+.openRight{transform:translateX(100%);}
+
+#countdown{display:none;position:absolute;width:100%;height:100%;}
+#countVideo{width:100%;height:100%;object-fit:cover;}
+
+#codeScreen{display:none;position:fixed;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column;}
+
+input{padding:12px;font-size:18px;border:none;border-radius:8px;}
+button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;background:#e91e63;color:white;font-size:18px;}
+
+#error{color:red;display:none;}
+
+#result{
+display:none;
+position:fixed;
+width:100%;
+height:100%;
+background-size:cover;
+background-position:center;
+align-items:center;
+justify-content:center;
+flex-direction:column;
 }
 
-button{
-  padding:15px 30px;
-  font-size:20px;
-  border:none;
-  border-radius:10px;
-  background:#e91e63;
-  color:white;
+#overlay{
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+top:0;left:0;
 }
 
-img{
-  width:80%;
-  max-width:300px;
-  margin-top:20px;
-  border-radius:20px;
+#musicBtn{
+z-index:2;
 }
+
 </style>
 </head>
 
 <body>
 
-<h2>Test Başlat</h2>
-<button onclick="baslat()">BAŞLAT</button>
+<div id="stage">
+  <div id="playBtn"></div>
+  <div id="leftCurtain" class="curtain"></div>
+  <div id="rightCurtain" class="curtain"></div>
 
-<img id="photo" style="display:none;">
+  <div id="countdown">
+    <video id="countVideo" src="countdown.mp4" muted playsinline></video>
+  </div>
+</div>
 
-<audio id="audio" controls style="display:none;margin-top:20px;"></audio>
+<div id="codeScreen">
+  <h2>❤️ Sürprize son bir adım ❤️</h2>
+  <input id="codeInput" placeholder="Kod gir">
+  <button id="openBtn">Aç</button>
+  <div id="error">Kod yanlış</div>
+</div>
+
+<div id="result">
+  <div id="overlay"></div>
+  <button id="musicBtn">🎵 Sürprizi Dinle</button>
+</div>
+
+<audio id="audioPlayer"></audio>
 
 <script>
 
-const CLOUD_NAME = "dmtrmcxpl"; // senin cloud name
+const CLOUD_NAME = "dmtrmcxpl";
 
-function baslat(){
+let currentCode = "";
 
-  let code = "1234"; // TEST için sabit kod
+/* ELEMENTLER */
+const playBtn = document.getElementById("playBtn");
+const leftCurtain = document.getElementById("leftCurtain");
+const rightCurtain = document.getElementById("rightCurtain");
+const countdown = document.getElementById("countdown");
+const video = document.getElementById("countVideo");
+const stage = document.getElementById("stage");
+const codeScreen = document.getElementById("codeScreen");
+const result = document.getElementById("result");
+
+/* BAŞLAT */
+playBtn.addEventListener("click", ()=>{
+  playBtn.style.display="none";
+  leftCurtain.classList.add("openLeft");
+  rightCurtain.classList.add("openRight");
+
+  setTimeout(()=>{
+    countdown.style.display="block";
+    video.play().catch(()=>{});
+    video.onended = ()=>{
+      stage.style.display="none";
+      codeScreen.style.display="flex";
+    };
+  },2000);
+});
+
+/* KOD */
+document.getElementById("openBtn").addEventListener("click", ()=>{
+
+  let code = document.getElementById("codeInput").value.trim();
+  if(code==="") return;
+
+  currentCode = code;
 
   let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.jpg`;
-  let audioURL = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${code}/ses.mp3`;
 
-  let img = document.getElementById("photo");
-  let audio = document.getElementById("audio");
+  let img = new Image();
+
+  img.onload = ()=>{
+    codeScreen.style.display="none";
+    result.style.display="flex";
+    result.style.backgroundImage = `url(${photoURL})`;
+  };
+
+  img.onerror = ()=>{
+    document.getElementById("error").style.display="block";
+  };
 
   img.src = photoURL;
-  img.style.display = "block";
+});
 
-  audio.src = audioURL;
-  audio.style.display = "block";
-  audio.play();
-}
+/* MÜZİK */
+document.getElementById("musicBtn").addEventListener("click", ()=>{
+
+  let audioURL = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
+
+  let player = document.getElementById("audioPlayer");
+  player.src = audioURL;
+  player.play();
+});
 
 </script>
 
