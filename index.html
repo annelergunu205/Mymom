@@ -4,77 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>For My Love</title>
-
 <style>
 body{margin:0;background:black;overflow:hidden;font-family:Arial;color:white;}
-
 #stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
-
-#playBtn{
-position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;
-display:flex;align-items:center;justify-content:center;cursor:pointer;
-}
-#playBtn:after{
-content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;
-}
-
-.curtain{
-position:absolute;top:0;width:50%;height:100%;
-background-image:url("curtain.jpg");
-background-size:200% 100%;
-transition:2s;
-}
+#playBtn{position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#playBtn:after{content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;}
+.curtain{position:absolute;top:0;width:50%;height:100%;background-image:url("curtain.jpg");background-size:200% 100%;transition:2s;}
 #leftCurtain{left:0;background-position:left;}
 #rightCurtain{right:0;background-position:right;}
 .openLeft{transform:translateX(-100%);}
 .openRight{transform:translateX(100%);}
-
 #countdown{display:none;position:absolute;width:100%;height:100%;}
 #countVideo{width:100%;height:100%;object-fit:cover;}
-
-#codeScreen{
-display:none;position:fixed;width:100%;height:100%;
-flex-direction:column;align-items:center;justify-content:center;text-align:center;
-}
-
+#codeScreen{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
 input{padding:12px;font-size:18px;border:none;border-radius:8px;margin-top:10px;}
-
-button{
-padding:12px 25px;margin-top:10px;border:none;border-radius:20px;
-background:#e91e63;color:white;font-size:18px;cursor:pointer;
-}
-
+button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;background:#e91e63;color:white;font-size:18px;cursor:pointer;}
 #error{color:red;margin-top:10px;display:none;}
-
-#result{
-display:none;position:fixed;width:100%;height:100%;
-flex-direction:column;align-items:center;justify-content:flex-start;
-padding-top:20px;
-}
-
-#result img{
-width:80%;max-width:400px;border-radius:20px;margin-bottom:10px;
-}
-
+#result{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:20px;box-sizing:border-box;}
+#result img{width:80%;max-width:400px;border-radius:20px;margin-bottom:10px;}
 #musicBtn{margin-top:20px;}
-
-#heartLayer{
-position:fixed;width:100%;height:100%;top:0;left:0;
-pointer-events:none;overflow:hidden;z-index:999;
-}
-
-.heart{
-position:absolute;color:red;font-size:22px;
-animation:float 6s linear infinite;
-}
-
-@keyframes float{
-0%{transform:translateY(100vh);opacity:1}
-100%{transform:translateY(-10vh);opacity:0}
-}
+#heartLayer{position:fixed;width:100%;height:100%;top:0;left:0;pointer-events:none;overflow:hidden;z-index:999;}
+.heart{position:absolute;color:red;font-size:22px;animation:float 6s linear infinite;}
+@keyframes float{0%{transform:translateY(100vh);opacity:1}100%{transform:translateY(-10vh);opacity:0}}
 </style>
 </head>
-
 <body>
 
 <div id="stage">
@@ -94,7 +47,7 @@ animation:float 6s linear infinite;
 </div>
 
 <div id="result">
-  <img id="resultImage">
+  <img id="resultImage" src="" alt="Sürpriz">
   <button id="musicBtn">🎵 Sürprizi Dinle</button>
 </div>
 
@@ -104,6 +57,17 @@ animation:float 6s linear infinite;
 const CLOUD_NAME="dmtrmcxpl";
 let currentCode="";
 let heartInterval;
+
+// Kodlara özel görsel ve ses URL’leri
+const imageMap = {
+  "mAyMsD25": "https://res.cloudinary.com/dmtrmcxpl/image/upload/v1775384040/clients/mAyMsD25/mAyMsD25.png",
+  "yMtAsG35": "https://res.cloudinary.com/dmtrmcxpl/image/upload/v1775403442/clients/yMtAsG35/yMtAsG35.png"
+};
+
+const audioMap = {
+  "mAyMsD25": "https://res.cloudinary.com/dmtrmcxpl/video/upload/clients/mAyMsD25/ses.mp3",
+  "yMtAsG35": "https://res.cloudinary.com/dmtrmcxpl/video/upload/clients/yMtAsG35/ses.mp3"
+};
 
 // ELEMENTLER
 const playBtn=document.getElementById("playBtn");
@@ -130,12 +94,12 @@ playBtn.addEventListener("click", ()=>{
     video.onended=()=>{
       stage.style.display="none";
       codeScreen.style.display="flex";
-      startHearts();
+      startHearts(); // Kod ekranında kalpler başlar
     };
   },2000);
 });
 
-// KALPLER
+// UÇUŞAN KALPLER
 function startHearts(){
   if(heartInterval) return;
   heartInterval=setInterval(()=>{
@@ -148,40 +112,32 @@ function startHearts(){
   },300);
 }
 
-// KOD KONTROL + GÖRSEL
+// KOD KONTROL VE GÖRSEL YÜKLEME
 document.getElementById("openBtn").addEventListener("click", ()=>{
   let code=document.getElementById("codeInput").value.trim();
   if(!code) return;
 
   currentCode=code;
 
-  let photoURL=`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.png`;
-
-  let img=new Image();
-  img.onload=()=>{
-    resultImage.src=photoURL;
-    codeScreen.style.display="none";
-    result.style.display="flex";
-  };
-
-  img.onerror=()=>{
+  if(!imageMap[currentCode]){
     document.getElementById("error").style.display="block";
-  };
+    return;
+  }
 
-  img.src=photoURL;
+  resultImage.src = imageMap[currentCode];
+  codeScreen.style.display="none";
+  result.style.display="flex";
+  startHearts(); // Görselde kalpler devam eder
 });
 
-// 🎵 DİNAMİK SES (HER KOD İÇİN AYRI)
+// SÜRPRİZİ DİNLE (SES)
 musicBtn.addEventListener("click", ()=>{
-  if(!currentCode) return;
+  if(!currentCode || !audioMap[currentCode]) return;
 
-  const audioURL = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
-
-  const surpriseAudio = new Audio(audioURL);
-
+  const surpriseAudio = new Audio(audioMap[currentCode]);
   surpriseAudio.play().catch(err=>{
     console.log("Ses hatası:", err);
-    alert("Ses bulunamadı veya yüklenemedi.");
+    alert("Ses yüklenemedi veya tarayıcı izin vermedi.");
   });
 });
 </script>
