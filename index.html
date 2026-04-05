@@ -66,7 +66,7 @@ const result = document.getElementById("result");
 const musicBtn = document.getElementById("musicBtn");
 
 // Play butonuna basınca countdown video + ses başlat
-playBtn.addEventListener("click", async ()=>{
+playBtn.addEventListener("click", ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
   rightCurtain.classList.add("openRight");
@@ -110,7 +110,7 @@ musicBtn.addEventListener("click", ()=>{
   countdownAudio.pause();
   countdownAudio.currentTime = 0;
 
-  // Surprise audio önceden oluşturulmuş Audio objesiyle çal
+  // Sürpriz sesini önceden oluştur ve çal
   if(!surpriseAudio){
     surpriseAudio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`);
   } else {
