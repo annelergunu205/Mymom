@@ -32,7 +32,7 @@ button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;backgrou
   <div id="leftCurtain" class="curtain"></div>
   <div id="rightCurtain" class="curtain"></div>
   <div id="countdown">
-    <video id="countVideo" src="countdown.mp4" muted autoplay playsinline></video>
+    <video id="countVideo" src="countdown.mp4" playsinline></video>
   </div>
 </div>
 
@@ -51,7 +51,9 @@ button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;backgrou
 <script>
 const CLOUD_NAME = "dmtrmcxpl";
 let currentCode = "";
+let audioPlayer;
 
+// ELEMENTLER
 const playBtn = document.getElementById("playBtn");
 const leftCurtain = document.getElementById("leftCurtain");
 const rightCurtain = document.getElementById("rightCurtain");
@@ -61,10 +63,16 @@ const stage = document.getElementById("stage");
 const codeScreen = document.getElementById("codeScreen");
 const result = document.getElementById("result");
 
-playBtn.addEventListener("click", ()=>{
+// Play butonuna basınca countdown ve ses başlat
+playBtn.addEventListener("click", async ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
   rightCurtain.classList.add("openRight");
+
+  // Audio ve video kullanıcı tıklamasıyla başlatılıyor
+  audioPlayer = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/clients/mAyMsD25/ses.mp3");
+  audioPlayer.play().catch(()=>{});
+
   setTimeout(()=>{
     countdown.style.display="block";
     video.play().catch(()=>{});
@@ -75,6 +83,7 @@ playBtn.addEventListener("click", ()=>{
   },2000);
 });
 
+// Kod ekranı
 document.getElementById("openBtn").addEventListener("click", ()=>{
   let code = document.getElementById("codeInput").value.trim();
   if(code==="") return;
@@ -92,14 +101,14 @@ document.getElementById("openBtn").addEventListener("click", ()=>{
   img.src = photoURL;
 });
 
+// Sürprizi Dinle butonu
 document.getElementById("musicBtn").addEventListener("click", ()=>{
   if(currentCode==="") return;
-  // Yeni Audio objesi ile %100 tarayıcı uyumlu
-  const audio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`);
-  audio.play().catch(err=>{
-    console.log("Audio çalmadı:", err);
-  });
+  // Yeni Audio objesi kullanıcı tıklamasıyla yaratılıyor → %100 çalışır
+  const surpriseAudio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`);
+  surpriseAudio.play().catch(err=>console.log(err));
 });
 </script>
+
 </body>
 </html>
