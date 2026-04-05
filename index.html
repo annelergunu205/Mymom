@@ -7,52 +7,23 @@
 
 <style>
 body{margin:0;background:black;font-family:Arial;overflow:hidden;color:white;}
-
 #stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 #playBtn{position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 #playBtn:after{content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;}
-
 .curtain{position:absolute;top:0;width:50%;height:100%;background-image:url("curtain.jpg");background-size:200% 100%;transition:2s;}
 #leftCurtain{left:0;background-position:left;}
 #rightCurtain{right:0;background-position:right;}
 .openLeft{transform:translateX(-100%);}
 .openRight{transform:translateX(100%);}
-
 #countdown{display:none;position:absolute;width:100%;height:100%;}
 #countVideo{width:100%;height:100%;object-fit:cover;}
-
 #codeScreen{display:none;position:fixed;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column;}
-
 input{padding:12px;font-size:18px;border:none;border-radius:8px;}
 button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;background:#e91e63;color:white;font-size:18px;}
-
 #error{color:red;display:none;}
-
-#result{
-display:none;
-position:fixed;
-width:100%;
-height:100%;
-background-size:contain; /* Görsel tam ekran sığar */
-background-position:center;
-background-repeat:no-repeat;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-}
-
-#overlay{
-position:absolute;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-top:0;left:0;
-}
-
-#musicBtn{
-z-index:2;
-}
-
+#result{display:none;position:fixed;width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;align-items:center;justify-content:center;flex-direction:column;}
+#overlay{position:absolute;width:100%;height:100%;background:rgba(0,0,0,0.5);top:0;left:0;}
+#musicBtn{z-index:2;}
 </style>
 </head>
 
@@ -64,7 +35,7 @@ z-index:2;
   <div id="rightCurtain" class="curtain"></div>
 
   <div id="countdown">
-    <video id="countVideo" src="countdown.mp4" playsinline></video>
+    <video id="countVideo" src="countdown.mp4" muted autoplay playsinline></video>
   </div>
 </div>
 
@@ -86,7 +57,6 @@ z-index:2;
 const CLOUD_NAME = "dmtrmcxpl";
 let currentCode = "";
 
-/* ELEMENTLER */
 const playBtn = document.getElementById("playBtn");
 const leftCurtain = document.getElementById("leftCurtain");
 const rightCurtain = document.getElementById("rightCurtain");
@@ -97,7 +67,6 @@ const codeScreen = document.getElementById("codeScreen");
 const result = document.getElementById("result");
 const audioPlayer = document.getElementById("audioPlayer");
 
-/* BAŞLAT */
 playBtn.addEventListener("click", ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
@@ -105,14 +74,7 @@ playBtn.addEventListener("click", ()=>{
 
   setTimeout(()=>{
     countdown.style.display="block";
-    // Kullanıcı etkileşimi ile video sesi çalabilir
-    video.muted = false;
-    const playPromise = video.play();
-    if(playPromise !== undefined){
-      playPromise.catch(err=>{
-        console.log("Video çalmadı:", err);
-      });
-    }
+    video.play().catch(()=>{});
     video.onended = ()=>{
       stage.style.display="none";
       codeScreen.style.display="flex";
@@ -120,11 +82,9 @@ playBtn.addEventListener("click", ()=>{
   },2000);
 });
 
-/* KOD */
 document.getElementById("openBtn").addEventListener("click", ()=>{
   let code = document.getElementById("codeInput").value.trim();
   if(code==="") return;
-
   currentCode = code;
   let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.png`;
 
@@ -140,18 +100,14 @@ document.getElementById("openBtn").addEventListener("click", ()=>{
   img.src = photoURL;
 });
 
-/* MÜZİK */
-document.getElementById("musicBtn").addEventListener("click", ()=>{
+document.getElementById("musicBtn").addEventListener("click", async ()=>{
   if(currentCode==="") return;
-
   audioPlayer.src = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
-
-  const playPromise = audioPlayer.play();
-  if(playPromise !== undefined){
-    playPromise.catch(err=>{
-      console.log("Audio çalmadı:", err);
-      alert("Audio çalınamadı. Lütfen tarayıcınızın ses ayarlarını kontrol edin.");
-    });
+  try{
+    await audioPlayer.play();
+  } catch(err){
+    console.log("Audio çalınamadı:", err);
+    alert("Tarayıcınız izin vermedi. Lütfen sesi açın ve tekrar deneyin.");
   }
 });
 </script>
