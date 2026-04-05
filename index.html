@@ -102,22 +102,26 @@ animation:float 6s linear infinite;
 
 <div id="result">
   <img id="resultImage">
-  <button id="videoBtn">🎬 Sürprizi Gör</button>
+  <button id="videoBtn">🎁 Sürprizi Aç</button>
 </div>
 
 <div id="videoBox">
   <video id="videoPlayer" controls></video>
 </div>
 
+<audio id="audioPlayer"></audio>
+
 <div id="heartLayer"></div>
 
 <script>
 const CLOUD_NAME="dmtrmcxpl";
+
 let currentCode="";
 let heartInterval=null;
 let videoOpen=false;
+let hasAudio=false;
+let hasVideo=false;
 
-// ELEMENTLER
 const playBtn=document.getElementById("playBtn");
 const leftCurtain=document.getElementById("leftCurtain");
 const rightCurtain=document.getElementById("rightCurtain");
@@ -130,6 +134,7 @@ const videoBtn=document.getElementById("videoBtn");
 const resultImage=document.getElementById("resultImage");
 const videoBox=document.getElementById("videoBox");
 const videoPlayer=document.getElementById("videoPlayer");
+const audioPlayer=document.getElementById("audioPlayer");
 const heartLayer=document.getElementById("heartLayer");
 
 // GERİ TUŞU
@@ -169,6 +174,38 @@ function startHearts(){
   },300);
 }
 
+// MEDYA KONTROL
+function checkMedia(code){
+  hasAudio=false;
+  hasVideo=false;
+
+  const audioURL=`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${code}/ses.mp3`;
+  const videoURL=`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${code}/video.mp4`;
+
+  let a=new Audio();
+  a.oncanplay=()=>{hasAudio=true;updateButton();}
+  a.onerror=()=>{hasAudio=false;updateButton();}
+  a.src=audioURL;
+
+  let v=document.createElement("video");
+  v.oncanplay=()=>{hasVideo=true;updateButton();}
+  v.onerror=()=>{hasVideo=false;updateButton();}
+  v.src=videoURL;
+}
+
+// BUTON YAZISI
+function updateButton(){
+  if(hasAudio && hasVideo){
+    videoBtn.innerText="🎬 Sesli Sürprizi Aç";
+  }else if(hasAudio){
+    videoBtn.innerText="🔊 Sesi Dinle";
+  }else if(hasVideo){
+    videoBtn.innerText="🎬 Videoyu İzle";
+  }else{
+    videoBtn.innerText="❌ Medya Yok";
+  }
+}
+
 // KOD + GÖRSEL
 document.getElementById("openBtn").addEventListener("click", ()=>{
   let code=document.getElementById("codeInput").value.trim();
@@ -188,36 +225,61 @@ document.getElementById("openBtn").addEventListener("click", ()=>{
     img.onload=()=>{
       resultImage.src=imgURL;
       currentCode=code;
+
+      checkMedia(code);
+
       codeScreen.style.display="none";
       result.style.display="flex";
     };
-    img.onerror=()=>{tryImage(i+1);};
+    img.onerror=()=>{tryImage(i+1);}
     img.src=imgURL;
   }
 
   tryImage(0);
 });
 
-// VIDEO AÇ
+// BUTON AKSIYONU
 videoBtn.addEventListener("click", ()=>{
   if(!currentCode) return;
 
+  const audioURL=`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/ses.mp3`;
   const videoURL=`https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${currentCode}/video.mp4`;
 
-  videoPlayer.src=videoURL;
+  if(hasAudio && !hasVideo){
+    audioPlayer.src=audioURL;
+    audioPlayer.play();
+    return;
+  }
+
+  if(hasVideo && !hasAudio){
+    openVideo(videoURL);
+    return;
+  }
+
+  if(hasAudio && hasVideo){
+    audioPlayer.src=audioURL;
+    audioPlayer.play();
+
+    audioPlayer.onended=()=>{
+      openVideo(videoURL);
+    };
+    return;
+  }
+
+  alert("Medya bulunamadı");
+});
+
+function openVideo(url){
+  videoPlayer.src=url;
   result.style.display="none";
   videoBox.style.display="block";
-
   videoPlayer.play();
 
   history.pushState({video:true},"");
   videoOpen=true;
-});
+}
 
-// VIDEO BİTİNCE GERİ DÖN
-videoPlayer.onended=()=>{
-  closeVideo(false);
-};
+videoPlayer.onended=()=>closeVideo(false);
 
 function closeVideo(fromBack){
   videoBox.style.display="none";
