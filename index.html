@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Love</title>
+
+<style>
+body{margin:0;background:black;overflow:hidden;font-family:Arial;}
+#stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+#playBtn{position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#playBtn:after{content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;}
+.curtain{position:absolute;top:0;width:50%;height:100%;background-image:url("curtain.jpg");background-size:200% 100%;transition:2.2s;}
+#leftCurtain{left:0;background-position:left;}
+#rightCurtain{right:0;background-position:right;}
+.openLeft{transform:translateX(-100%);}
+.openRight{transform:translateX(100%);}
+#countdown{position:absolute;display:none;width:100%;height:100%;}
+#countVideo{width:100%;height:100%;object-fit:cover;}
+#flash{position:fixed;width:100%;height:100%;background:white;opacity:0;transition:0.3s;}
+#codeScreen{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;color:white;}
+input{padding:12px;font-size:18px;border-radius:8px;border:none;}
+button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;background:#e91e63;color:white;font-size:18px;}
+#error{color:red;display:none;margin-top:10px;}
+#result{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:20px;}
+#photo{width:80%;max-width:400px;border-radius:20px;margin-bottom:10px;}
+#musicBox{display:none;position:fixed;width:100%;height:100%;background:black;z-index:50;}
+#audioPlayer{width:90%;margin-top:40px;}
+#heartLayer{position:fixed;width:100%;height:100%;pointer-events:none;}
+.heart{position:absolute;color:red;font-size:22px;animation:float 6s linear infinite;}
+@keyframes float{0%{transform:translateY(100vh);opacity:1}100%{transform:translateY(-10vh);opacity:0}}
+</style>
+</head>
+
+<body>
+
+<div id="stage">
+  <div id="playBtn" onclick="startExperience()"></div>
+  <div id="leftCurtain" class="curtain"></div>
+  <div id="rightCurtain" class="curtain"></div>
+  <div id="countdown">
+    <video id="countVideo" src="countdown.mp4"></video>
+  </div>
+</div>
+
+<div id="flash"></div>
+
+<div id="codeScreen">
+  <h2>❤️ Sürprize son bir adım ❤️</h2>
+  <input id="codeInput" placeholder="Kod gir">
+  <button onclick="go()">Aç</button>
+  <div id="error">Yanlış Kod</div>
+</div>
+
+<div id="result">
+  <img id="photo">
+  <button onclick="playMusic()">Şarkıyı Çal 🎵</button>
+</div>
+
+<div id="musicBox">
+  <audio id="audioPlayer" controls></audio>
+</div>
+
+<div id="heartLayer"></div>
+
+<script>
+
+let currentCode="";
+let videoOpen=false;
+
+/* QR AUTO CODE */
+const params = new URLSearchParams(window.location.search);
+const autoCode = params.get("code");
+
+/* GERİ TUŞU */
+window.addEventListener("popstate",function(){
+  if(videoOpen) closeVideo(true);
+});
+
+/* BAŞLAT */
+function startExperience(){
+  document.getElementById("playBtn").style.display="none";
+  document.getElementById("leftCurtain").classList.add("openLeft");
+  document.getElementById("rightCurtain").classList.add("openRight");
+  setTimeout(startCountdown,2200);
+}
+
+function startCountdown(){
+  const c = document.getElementById("countdown");
+  const v = document.getElementById("countVideo");
+  c.style.display="block";
+  v.play();
+  v.onended = flash;
+}
+
+function flash(){
+  const f = document.getElementById("flash");
+  f.style.opacity="1";
+  setTimeout(()=>{f.style.opacity="0"; showCode();},300);
+}
+
+function showCode(){
+  const stage = document.getElementById("stage");
+  const codeScreen = document.getElementById("codeScreen");
+  const heartLayer = document.getElementById("heartLayer");
+
+  stage.style.display="none";
+  codeScreen.style.display="flex";
+
+  if(autoCode){
+    document.getElementById("codeInput").value = autoCode;
+    go();
+  }
+
+  setInterval(()=>{
+    let h=document.createElement("div");
+    h.className="heart";
+    h.innerText="❤";
+    h.style.left=Math.random()*100+"%";
+    heartLayer.appendChild(h);
+    setTimeout(()=>h.remove(),6000);
+  },300);
+}
+
+/* FOTO */
+function go(){
+  let code = document.getElementById("codeInput").value.trim();
+  if(code==="") return;
+
+  currentCode = code;
+
+  // Buraya kendi Cloud Name'inizi yazın
+  const CLOUD_NAME = "dmtrmcxpl";
+
+  let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.jpg`;
+
+  let img = new Image();
+  img.onload = function(){
+    document.getElementById("photo").src = photoURL;
+    document.getElementById("codeScreen").style.display="none";
+    document.getElementById("result").style.display="flex";
+  };
+  img.onerror = function(){
+    document.getElementById("error").style.display="block";
+  };
+  img.src = photoURL;
+}
+
+/* MP3 */
+function getAudioURL(code){
+  const CLOUD_NAME = "dmtrmcxpl";
+  return `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/clients/${code}/ses.mp3`;
+}
+
+/* MÜZİK */
+function playMusic(){
+  const url = getAudioURL(currentCode);
+
+  document.getElementById("result").style.display="none";
+  document.getElementById("musicBox").style.display="block";
+
+  history.pushState({video:true},"");
+  videoOpen=true;
+
+  let player = document.getElementById("audioPlayer");
+  player.src = url;
+  player.play();
+}
+
+function closeVideo(fromBack){
+  document.getElementById("musicBox").style.display="none";
+  document.getElementById("result").style.display="flex";
+
+  let player = document.getElementById("audioPlayer");
+  player.pause();
+  player.currentTime = 0;
+
+  videoOpen=false;
+
+  if(!fromBack) history.back();
+}
+
+</script>
+
+</body>
+</html>
