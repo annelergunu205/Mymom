@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>For My Love</title>
 <style>
-body{margin:0;background:black;font-family:Arial;overflow:hidden;color:white;}
+body{margin:0;background:black;overflow:hidden;font-family:Arial;color:white;}
 #stage{position:fixed;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 #playBtn{position:absolute;z-index:20;width:120px;height:120px;background:black;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 #playBtn:after{content:"";border-left:35px solid white;border-top:20px solid transparent;border-bottom:20px solid transparent;}
@@ -16,13 +16,16 @@ body{margin:0;background:black;font-family:Arial;overflow:hidden;color:white;}
 .openRight{transform:translateX(100%);}
 #countdown{display:none;position:absolute;width:100%;height:100%;}
 #countVideo{width:100%;height:100%;object-fit:cover;}
-#codeScreen{display:none;position:fixed;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column;}
-input{padding:12px;font-size:18px;border:none;border-radius:8px;}
+#codeScreen{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+input{padding:12px;font-size:18px;border:none;border-radius:8px;margin-top:10px;}
 button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;background:#e91e63;color:white;font-size:18px;cursor:pointer;}
-#error{color:red;display:none;}
-#result{display:none;position:fixed;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column;}
-#result img{max-width:80%;max-height:80%;border-radius:12px;}
+#error{color:red;margin-top:10px;display:none;}
+#result{display:none;position:fixed;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:20px;box-sizing:border-box;}
+#result img{width:80%;max-width:400px;border-radius:20px;margin-bottom:10px;}
 #musicBtn{margin-top:20px;}
+#heartLayer{position:fixed;width:100%;height:100%;top:0;left:0;pointer-events:none;overflow:hidden;z-index:999;}
+.heart{position:absolute;color:red;font-size:22px;animation:float 6s linear infinite;}
+@keyframes float{0%{transform:translateY(100vh);opacity:1}100%{transform:translateY(-10vh);opacity:0}}
 </style>
 </head>
 <body>
@@ -44,28 +47,31 @@ button{padding:12px 25px;margin-top:10px;border:none;border-radius:20px;backgrou
 </div>
 
 <div id="result">
-  <!-- Dinamik görsel buraya eklenecek -->
   <img id="resultImage" src="" alt="Sürpriz">
   <button id="musicBtn">🎵 Sürprizi Dinle</button>
 </div>
 
+<div id="heartLayer"></div>
+
 <script>
-const CLOUD_NAME = "dmtrmcxpl";
-let currentCode = "";
+const CLOUD_NAME="dmtrmcxpl";
+let currentCode="";
+let heartInterval;
 
 // ELEMENTLER
-const playBtn = document.getElementById("playBtn");
-const leftCurtain = document.getElementById("leftCurtain");
-const rightCurtain = document.getElementById("rightCurtain");
-const countdown = document.getElementById("countdown");
-const video = document.getElementById("countVideo");
-const stage = document.getElementById("stage");
-const codeScreen = document.getElementById("codeScreen");
-const result = document.getElementById("result");
-const musicBtn = document.getElementById("musicBtn");
-const resultImage = document.getElementById("resultImage");
+const playBtn=document.getElementById("playBtn");
+const leftCurtain=document.getElementById("leftCurtain");
+const rightCurtain=document.getElementById("rightCurtain");
+const countdown=document.getElementById("countdown");
+const video=document.getElementById("countVideo");
+const stage=document.getElementById("stage");
+const codeScreen=document.getElementById("codeScreen");
+const result=document.getElementById("result");
+const musicBtn=document.getElementById("musicBtn");
+const resultImage=document.getElementById("resultImage");
+const heartLayer=document.getElementById("heartLayer");
 
-// Perde açılışı (ses yok)
+// Perde açılışı (sessiz)
 playBtn.addEventListener("click", ()=>{
   playBtn.style.display="none";
   leftCurtain.classList.add("openLeft");
@@ -74,37 +80,50 @@ playBtn.addEventListener("click", ()=>{
   setTimeout(()=>{
     countdown.style.display="block";
     video.play().catch(()=>{});
-    video.onended = ()=>{
+    video.onended=()=>{
       stage.style.display="none";
       codeScreen.style.display="flex";
+      startHearts(); // Kod ekranında kalpler başlar
     };
   },2000);
 });
 
-// Kod ekranı
+// Uçuşan kalpler başlat
+function startHearts(){
+  if(heartInterval) return;
+  heartInterval=setInterval(()=>{
+    let h=document.createElement("div");
+    h.className="heart";
+    h.innerText="❤";
+    h.style.left=Math.random()*100+"%";
+    heartLayer.appendChild(h);
+    setTimeout(()=>h.remove(),6000);
+  },300);
+}
+
+// Kod doğrulama ve görsel
 document.getElementById("openBtn").addEventListener("click", ()=>{
-  let code = document.getElementById("codeInput").value.trim();
+  let code=document.getElementById("codeInput").value.trim();
   if(!code) return;
-  currentCode = code;
-  let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.png`;
-  let img = new Image();
-  img.onload = ()=>{
+  currentCode=code;
+  let photoURL=`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.png`;
+  let img=new Image();
+  img.onload=()=>{
+    resultImage.src=photoURL;
     codeScreen.style.display="none";
     result.style.display="flex";
-    resultImage.src = photoURL; // Görsel burada
+    startHearts(); // Görselde kalpler devam eder
   };
-  img.onerror = ()=>{
+  img.onerror=()=>{
     document.getElementById("error").style.display="block";
   };
-  img.src = photoURL;
+  img.src=photoURL;
 });
 
-// Sürprizi Dinle butonu
+// Sürprizi Dinle butonu (ses)
 musicBtn.addEventListener("click", ()=>{
   if(!currentCode) return;
-
-  // Örnek ses URL
-  const surpriseAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/v1775398055/ses_ldqc5r.mp3");
+  const surpriseAudio=new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/v1775398055/ses_ldqc5r.mp3");
   surpriseAudio.play().catch(err=>{
     console.log("Ses çalınamadı:", err);
     alert("Tarayıcı izin vermedi veya dosya bulunamadı.");
