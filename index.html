@@ -71,7 +71,7 @@ playBtn.addEventListener("click", ()=>{
   rightCurtain.classList.add("openRight");
 
   // Countdown audio kullanıcı tıklamasıyla başlatılıyor
-  countdownAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/raw/upload/clients/mAyMsD25/ses.mp3");
+  countdownAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/v1775398055/ses_ldqc5r.mp3");
   countdownAudio.play().catch(()=>{});
 
   setTimeout(()=>{
@@ -112,8 +112,8 @@ musicBtn.addEventListener("click", ()=>{
     countdownAudio.currentTime = 0;
   }
 
-  // Sürpriz sesi kullanıcı tıklamasıyla çal
-  const surpriseAudio = new Audio(`https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/clients/${currentCode}/ses.mp3`);
+  // Sabit ses URL’si (örnek)
+  const surpriseAudio = new Audio("https://res.cloudinary.com/dmtrmcxpl/video/upload/v1775398055/ses_ldqc5r.mp3");
   surpriseAudio.play().catch(err=>{
     console.log("Ses çalınamadı:", err);
     alert("Tarayıcı izin vermedi. Lütfen sesi açıp tekrar deneyin.");
