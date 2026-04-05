@@ -121,7 +121,8 @@ document.getElementById("openBtn").addEventListener("click", ()=>{
 
   currentCode = code;
 
-  let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.jpg`;
+  // Burada jpg değil png kullandık
+  let photoURL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/clients/${code}/${code}.png`;
 
   let img = new Image();
 
